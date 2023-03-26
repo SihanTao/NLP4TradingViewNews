@@ -1,0 +1,6 @@
+data
+NLP4news
+python=3.8
+config.py
+*.sqlite
+__pycache__
