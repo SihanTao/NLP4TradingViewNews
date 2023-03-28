@@ -1,11 +1,11 @@
 import sqlite3
 from datetime import datetime, time
 
-def init_db():
+def init_db(location):
     """
     Creates the SQLite database and the news table if it does not already exist.
     """
-    conn = sqlite3.connect('news.sqlite')
+    conn = sqlite3.connect('news.sqlite') if location == 'global' else sqlite3.connect('news_china.sqlite')
     c = conn.cursor()
     c.execute('''CREATE TABLE IF NOT EXISTS news
                  (title TEXT PRIMARY KEY, date_time TEXT, symbol TEXT, body TEXT)''')

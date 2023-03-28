@@ -7,9 +7,12 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from db import init_db, add_news_to_db, get_news_from_db
 
+location = input('Enter a location [China, Global]: ').lower()
+BASE_URL = 'https://www.tradingview.com' if location == 'global' else 'https://cn.tradingview.com'
+
 driver = webdriver.Chrome()
 # Make a GET request to the login page
-driver.get('https://www.tradingview.com/accounts/signin/')
+driver.get(BASE_URL + '/accounts/signin/')
 driver.implicitly_wait(10)
 html = driver.page_source
 soup = BeautifulSoup(html, 'html.parser')
@@ -53,16 +56,14 @@ submit_button = WebDriverWait(driver, 10).until(
 )
 submit_button.click()
 
-
-BASE_URL = 'https://www.tradingview.com'
 options = ['topstories', 'stock', 'crypto', 'forex', 'index', 'futures', 'bond', 'economic']
 # Read an input from the user
 url = ''
 user_input = input('Enter a market: ' + str(options) + ' or press enter to get all news: ').lower()
 if user_input in options:
-    url = 'https://www.tradingview.com/news/?market=' + user_input
+    url = BASE_URL + '/news/?market=' + user_input
 else:
-    url = 'https://www.tradingview.com/news/'
+    url = BASE_URL + '/news/'
 
 driver.get(url)
 html = driver.page_source
@@ -96,14 +97,18 @@ with open(filename, 'w') as file:
         if link not in unwanted_links:
             file.write(link + '\n')
 
-init_db()
+init_db(location)
 
 for news in news_links:
     driver.get(news)
+    driver.implicitly_wait(10)
     news_html = driver.page_source
     news_soup = BeautifulSoup(news_html, 'html.parser')
     
     article = news_soup.find('article')
+    
+    if article is None:
+        continue
     
     title = article.find('h1').get_text()
     date_time = article.find('time')['datetime']
