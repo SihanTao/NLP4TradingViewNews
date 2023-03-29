@@ -37,10 +37,6 @@ for elem in soup(['script', 'link']):
     elem.decompose()
 
 html = str(soup)
-# save the response to a file
-with open('login.html', 'w') as file:
-    file.write(html)
-
 username_input = WebDriverWait(driver, 10).until(
     EC.presence_of_element_located((By.CSS_SELECTOR, 'input[name="username"][id*="email-signin__user-name-input"]'))
 )
