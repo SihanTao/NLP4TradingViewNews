@@ -5,7 +5,7 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from db import init_db, add_news_to_db, get_news_from_db
+from db import Database
 
 location = input('Enter a location [China, Global]: ').lower()
 BASE_URL = 'https://www.tradingview.com' if location == 'global' else 'https://cn.tradingview.com'
@@ -93,7 +93,8 @@ with open(filename, 'w') as file:
         if link not in unwanted_links:
             file.write(link + '\n')
 
-init_db(location)
+db = Database(location=location)
+db.init_db()
 
 for news in news_links:
     driver.get(news)
@@ -125,7 +126,7 @@ for news in news_links:
             body.append(elem.get_text().strip() + '\n')
     body = ''.join(body)
     
-    add = add_news_to_db(title, date_time, symbol, body)
+    add = db.add_news_to_db(title, date_time, symbol, body)
     if add:
         print(f'Added news "{title}" to database')
     else:
@@ -135,13 +136,15 @@ for news in news_links:
 driver.quit()
 # Save the information you extracted in a file
 news_filename = os.path.join(data_dir, 'news_content.txt')
-news_from_db = get_news_from_db()
-
+news_from_db = db.get_news_from_db()
+db.close()
 with open(news_filename, 'w') as file:
     for news in news_from_db:
-        file.write(news['title'] + '\n')
-        file.write(news['date_time'] + '\n')
-        file.write(news['symbol'] + '\n')
-        file.write(news['body'])
-        file.write('*' * 100 + '\n')
-    
+        try:
+            file.write(news['title'] + '\n')
+            file.write(news['date_time'] + '\n')
+            file.write(news['symbol'] + '\n')
+            file.write(news['body'])
+            file.write('*' * 100 + '\n')
+        except:
+            continue
